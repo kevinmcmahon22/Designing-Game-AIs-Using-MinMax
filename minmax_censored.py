@@ -65,7 +65,7 @@ class game_TicTacToe:
         return 0
     
     def final_move(self):
-        return self.ROWS*self.COLS==len(np.nonzero(self.board)[0])
+        return self.ROWS*self.COLS==len(np.nonzero(self.board)[0]) or (self.result() != 0)
 
 
 # ## Chomp (Gale-Game)
@@ -114,7 +114,7 @@ class game_Chomp:
         return -self.board[0,0] / float(self.numMoves)
     
     def final_move(self):
-        return self.ROWS*self.COLS==len(np.nonzero(self.board)[0])
+        return self.ROWS*self.COLS==len(np.nonzero(self.board)[0]) or (self.result() != 0)
 
 
 # # Show_game
