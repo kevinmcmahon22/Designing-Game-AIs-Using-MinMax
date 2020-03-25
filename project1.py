@@ -3,19 +3,27 @@
 
 # # Designing a Game Playing AI Using MinMax with α - β Pruning
 # ## Introduction
-# 
-# Our objective is to use Min-Max with alpha / beta pruning to find a winning strategy for either player. Moreover, both players will try to win as fast as possible.
+#
+# Our objective is to use Min-Max with alpha / beta pruning to find a winning strategy for either player. 
+# Moreover, both players will try to win as fast as possible.
 
 # In[1]:
 
 
 import numpy as np
 import itertools
+from operator import itemgetter
+
+class TooLong(Exception): pass
 
 
 # ## Tic Tac Toe
-# Also known as "Noughts and Crosses". The roots of this game can be traced back to ancient Egyp, where such game boards have been found on roofing tiles dating from around 1300 BCE. It was also one of the first computer games; In 1952, ritish computer scientist Alexander S. Douglas developed OXO (or Noughts and Crosses) for the EDSAC computer at the University of Cambridge. His implememntation used MinMax and was able to play a perfect game against a human oponent.
-# 
+# Also known as "Noughts and Crosses". The roots of this game can be traced back to ancient Egypt, 
+# where such game boards have been found on roofing tiles dating from around 1300 BCE. It was also 
+# one of the first computer games; In 1952, British computer scientist Alexander S. Douglas developed 
+# OXO (or Noughts and Crosses) for the EDSAC computer at the University of Cambridge. His implememntation 
+# used MinMax and was able to play a perfect game against a human oponent.
+#
 # This class implememnts a TicTacToa game. The followng are the methods:
 # * make_copy   : returns a copy of the game object.
 # * move(ii,jj) : the player who's turn it is will check cell ii,jj
@@ -31,22 +39,22 @@ class game_TicTacToe:
         self.ROWS = 3
         self.COLS = 3
         self.board = np.zeros((self.ROWS,self.COLS))
-        self.player = 1;
-        self.numMoves = 1;
-        
+        self.player = 1
+        self.numMoves = 1
+
     def make_copy(self):
         newGame = game_TicTacToe()
         newGame.board = self.board.copy()
         newGame.player = self.player
         return newGame
-    
+
     def move(self,ii,jj):
         if self.board[ii,jj] == 0:
             self.board[ii,jj] = self.player
         self.player *= -1
-        self.numMoves += 1;
-        return        
-        
+        self.numMoves += 1
+        return
+
     def children(self):
         children = []
         for ii, jj in np.argwhere(self.board == 0):
@@ -54,7 +62,7 @@ class game_TicTacToe:
             newGame.move(ii,jj)
             children.append(newGame)
         return children
-    
+
     def result(self):
         PL1 = 3.0
         PL2 = -3.0
@@ -63,14 +71,18 @@ class game_TicTacToe:
         if min(np.sum(self.board, axis=0)) == PL2 or min(np.sum(self.board, axis=1)) == PL2 or             np.trace(self.board) == PL2 or np.trace(np.fliplr(self.board)) == PL2:
             return -1/self.numMoves
         return 0
-    
+
     def final_move(self):
         return self.ROWS*self.COLS==len(np.nonzero(self.board)[0]) or (self.result() != 0)
 
 
 # ## Chomp (Gale-Game)
-# This is a newer game was developed by the mathematician David Gale (still kickin in cali). The game is usually formulated in terms of a chocolate bar were each of two players tries to avoid eating the last square. The players in turn choose one block and "eat it" (remove from the board), together with those that are below it and to its right. The top left block is "poisoned" and the player who eats this loses.  
-# 
+# This is a newer game was developed by the mathematician David Gale (still kickin in cali). 
+# The game is usually formulated in terms of a chocolate bar were each of two players tries 
+# to avoid eating the last square. The players in turn choose one block and "eat it" 
+# (remove from the board), together with those that are below it and to its right. The top 
+# left block is "poisoned" and the player who eats this loses.
+#
 # This class implememnts a Chomp game. The followng are the methods:
 # * make_copy   : returns a copy of the game object.
 # * move(ii,jj) : the player who's turn it is will check cell ii,jj
@@ -86,22 +98,22 @@ class game_Chomp:
         self.ROWS = ROWS
         self.COLS = COLS
         self.board = np.zeros((self.ROWS,self.COLS))
-        self.player = 1;
-        self.numMoves = 1;
-        
+        self.player = 1
+        self.numMoves = 1
+
     def make_copy(self):
         newGame = game_Chomp(self.ROWS,self.COLS)
         newGame.board = self.board.copy()
         newGame.player = self.player
         newGame.numMoves = self.numMoves
         return newGame
-    
+
     def move(self,ii,jj):
-        self.board[ii:self.ROWS,jj:self.COLS] = self.player;
+        self.board[ii:self.ROWS,jj:self.COLS] = self.player
         self.player *= -1
         self.numMoves += 1
-        return        
-        
+        return
+
     def children(self):
         children = []
         for ii, jj in np.argwhere(self.board == 0):
@@ -109,23 +121,24 @@ class game_Chomp:
             newGame.move(ii,jj)
             children.append(newGame)
         return children
-    
+
     def result(self):
         return -self.board[0,0] / float(self.numMoves)
-    
+
     def final_move(self):
         return self.ROWS*self.COLS==len(np.nonzero(self.board)[0]) or (self.result() != 0)
 
 
 # # Show_game
-# 
-# Given a list of "boards" (every game class has a board field) this method will draw the game. For instance it might draw the following TicTacToa game:
+#
+# Given a list of "boards" (every game class has a board field) this method will draw the game. 
+# For instance it might draw the following TicTacToa game:
 
 # In[23]:
 
 
 """
-Given a list of "boards" (every game class has a board field) this method will draw the game. 
+Given a list of "boards" (every game class has a board field) this method will draw the game.
 For instance it might draw the following TicTacToa game:
 """
 
@@ -157,11 +170,12 @@ def show_game(plays,gameType='TicTacToe'):
 
 
 # # Min Max
-# 
+#
 # Create a class of MinMax that has an alpha beta method.
-# 
+#
 # Params: game object, current alpha, current beta, and True if it's the max turn.
-# Returns: a list of the boards of the best game alpha and beta could play, and the result of the game (same as the result of the game object that has the last board)
+# Returns: a list of the boards of the best game alpha and beta could play, and the result 
+# of the game (same as the result of the game object that has the last board)
 
 # In[16]:
 
@@ -179,37 +193,89 @@ class minmax_alphabeta(object):
         self.bestPlay = list()
         return
 
-    # get a strategy to win the game    
+    # get a strategy to win the game
     def minmax(self, game=None, maximizingPlayer=True):
         global GLOBAL_NUM_CALLS
         GLOBAL_NUM_CALLS += 1
         if game == None:
             game = self.game
+        
+        # base case, return game and result if no more moves can be made
+        if game.final_move():
+            return [], game.result()
             
-        # COMPLETE ...
-        
+        children = game.children()
+
         if maximizingPlayer:
-            # COMPLETE ...
-            return bestPlay,value
+            result = -100
+            move_to_add = ''
+            for child_game in children:
+                list_of_moves, result_child = self.minmax(child_game, False)
+                if result_child > result:
+                    result = result_child
+                    self.bestPlay = list_of_moves
+                    move_to_add = child_game
+            # add child's game board to list, will print out game
+            # sequence at end of program with results
+            self.bestPlay.append(child_game.board)
+            return self.bestPlay, result
         else:
-            # COMPLETE ...
-            return bestPlay,value
-        
+            result = 100
+            move_to_add = ''
+            for child_game in children:
+                list_of_moves, result_child = self.minmax(child_game, True)
+                if result_child < result:
+                    result = result_child
+                    self.bestPlay = list_of_moves
+                    move_to_add = child_game
+            self.bestPlay.append(child_game.board)
+            return self.bestPlay, result
+
     # get a strategy to win the game
     def alpabeta(self, game=None, a=-np.inf, b=np.inf, maximizingPlayer=True):
         global GLOBAL_NUM_CALLS
         GLOBAL_NUM_CALLS += 1
         if game == None:
             game = self.game
+
+        if game.final_move():
+            return [], game.result()
             
-        # COMPLETE ...
-        
+        children = game.children()
+
+        # same as minimax with added a,b args and logic for pruing
+        # decreases # calls significantly
         if maximizingPlayer:
-            # COMPLETE ...
-            return bestPlay,value
+            result = -100
+            move_to_add = ''
+            for child_game in children:
+                list_of_moves, result_child = self.alpabeta(child_game, a, b, False)
+                if result_child > result:
+                    result = result_child
+                    self.bestPlay = list_of_moves
+                    move_to_add = child_game
+                # ab pruning, break occurs if no more exploring need be done
+                a = max(a, result)
+                if b <= a:
+                    break
+            self.bestPlay.append(child_game.board)
+            return self.bestPlay, result
         else:
-            # COMPLETE ...
-            return bestPlay,value
+            result = 100
+            move_to_add = ''
+            for child_game in children:
+                list_of_moves, result_child = self.alpabeta(child_game, a, b, True)
+                if result_child < result:
+                    result = result_child
+                    self.bestPlay = list_of_moves
+                    move_to_add = child_game
+                # ab pruning, break occurs if no more exploring need be done
+                b = min(b, result)
+                if b <= a:
+                    break
+            self.bestPlay.append(child_game.board)
+            return self.bestPlay, result
+
 
 
 # ## Tic Tac Toe Strategy
@@ -244,11 +310,11 @@ else:
 print('There were '+str(GLOBAL_NUM_CALLS)+' calls!')
 
 
-# ## Chomp Strategy
-# Is there a winning strategy for either player in TicTacToa?
-# How long can the the loosing player strech the game for?
+# # ## Chomp Strategy
+# # Is there a winning strategy for either player in TicTacToa?
+# # How long can the the loosing player strech the game for?
 
-# In[ ]:
+# # In[ ]:
 
 
 minmax = minmax_alphabeta(game_Chomp(4,4))
@@ -258,4 +324,3 @@ if res == 0:
     print('A perfect game results in a tie')
 else:
     print('player '+str(int(-np.sign(res)*1/2 +1.5))+' wins in turn '+str(int(1/res)))
-
